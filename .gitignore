@@ -1,0 +1,27 @@
+# ROS2 生成的构建文件和目录
+msg/*/build/
+msg/*/install/
+msg/*/log/
+
+# 通用构建目录
+build/
+install/
+log/
+
+# VS Code 配置（可选择是否忽略）
+# .vscode/
+
+# 编译生成的文件
+*.o
+# *.so
+*.a
+
+# Python 编译文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 临时文件
+*~
+.#*
+*.tmp
