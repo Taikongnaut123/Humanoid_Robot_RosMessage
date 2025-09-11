@@ -15,28 +15,30 @@
 ```
 RosMessage/                           # 发布包根目录
 ├── include/                          # 预编译头文件（核心）
-│   ├── perception/                   # perception模块头文件
-│   │   ├── perception_img.hpp
-│   │   ├── perception_masks.hpp
-│   │   ├── perception_masks_tracks.hpp
-│   │   ├── perception_track_row.hpp
-│   │   ├── perception_tracks.hpp
-│   │   ├── rosidl_generator_cpp__visibility_control.hpp
-│   │   └── detail/                   # 详细实现文件
-│   │       ├── perception_img__struct.hpp
-│   │       ├── perception_img__builder.hpp
-│   │       ├── perception_img__traits.hpp
-│   │       └── ... (其他detail文件)
-│   └── control/                      # control模块头文件
-│       ├── control_command.hpp
-│       ├── rosidl_generator_cpp__visibility_control.hpp
-│       └── detail/                   # 详细实现文件
-│           ├── control_command__struct.hpp
-│           ├── control_command__builder.hpp
-│           ├── control_command__traits.hpp
-│           └── ... (其他detail文件)
+│   ├── perception_messages/          # perception模块头文件（标准ROS2结构）
+│   │   └── msg/
+│   │       ├── perception_img.hpp
+│   │       ├── perception_masks.hpp
+│   │       ├── perception_masks_tracks.hpp
+│   │       ├── perception_track_row.hpp
+│   │       ├── perception_tracks.hpp
+│   │       ├── rosidl_generator_cpp__visibility_control.hpp
+│   │       └── detail/               # 详细实现文件
+│   │           ├── perception_img__struct.hpp
+│   │           ├── perception_img__builder.hpp
+│   │           ├── perception_img__traits.hpp
+│   │           └── ... (其他detail文件)
+│   └── control_messages/             # control模块头文件（标准ROS2结构）
+│       └── msg/
+│           ├── control_command.hpp
+│           ├── rosidl_generator_cpp__visibility_control.hpp
+│           └── detail/               # 详细实现文件
+│               ├── control_command__struct.hpp
+│               ├── control_command__builder.hpp
+│               ├── control_command__traits.hpp
+│               └── ... (其他detail文件)
 ├── lib/                              # 预编译库文件（核心）
-│   ├── perception/                   # perception模块库文件
+│   ├── perception_messages/          # perception模块库文件
 │   │   ├── libperception_messages__rosidl_generator_c.so
 │   │   ├── libperception_messages__rosidl_typesupport_cpp.so
 │   │   ├── libperception_messages__rosidl_typesupport_c.so
@@ -45,7 +47,7 @@ RosMessage/                           # 发布包根目录
 │   │   ├── libperception_messages__rosidl_typesupport_introspection_cpp.so
 │   │   ├── libperception_messages__rosidl_typesupport_introspection_c.so
 │   │   └── libperception_messages__rosidl_generator_py.so
-│   └── control/                      # control模块库文件
+│   └── control_messages/             # control模块库文件
 │       ├── libcontrol_messages__rosidl_generator_c.so
 │       ├── libcontrol_messages__rosidl_typesupport_cpp.so
 │       ├── libcontrol_messages__rosidl_typesupport_c.so
@@ -80,6 +82,34 @@ sudo apt install ros-humble-rosidl-default-runtime
 sudo apt install ros-humble-std-msgs
 ```
 
+## 工作流程
+
+### 开发者端（生成预编译包）
+```bash
+# 1. 构建各个消息模块
+cd msg/perception && colcon build
+cd ../control && colcon build
+
+# 2. 一键组织生成标准ROS2结构
+cd ../.. && ./organize_submodules.sh
+
+# 3. 验证生成结果
+cd test && ./build_tests.sh
+```
+
+### 第三方用户端（使用预编译包）
+```bash
+# 1. 获取预编译包
+cp -r /path/to/RosMessage /your/project/thirdparty/
+
+# 2. 验证完整性
+cd /your/project/thirdparty/RosMessage/test
+./build_tests.sh
+
+# 3. 集成到您的项目
+# 参考下面的"集成方式"部分
+```
+
 ## 快速开始
 
 ### 1. 获取预编译包
@@ -95,8 +125,8 @@ cp -r /path/to/provided/RosMessage /your/project/thirdparty/
 cd /your/project/thirdparty/RosMessage
 
 # 检查头文件
-ls include/perception/  # 应显示 *.hpp 文件
-ls include/control/     # 应显示 *.hpp 文件
+ls include/perception_messages/msg/  # 应显示 *.hpp 文件
+ls include/control_messages/msg/     # 应显示 *.hpp 文件
 
 # 检查库文件  
 ls lib/perception_messages/      # 应显示 *.so 文件
@@ -544,7 +574,7 @@ msg->img.data.reserve(expected_size);
 - `RosMessage/include/` - 预编译头文件目录
 - `RosMessage/lib/` - 预编译库文件目录
 - `RosMessage/test/` - 完整使用示例
-- `RosMessage/organize_submodules.sh` - 主要的文件组织脚本（自动创建标准ROS2结构）
+- `RosMessage/organize_submodules.sh` - 文件组织脚本（一键创建标准ROS2结构）
 - `RosMessage/test/build_tests.sh` - 第三方用户构建脚本
 - `THIRD_PARTY_INTEGRATION_GUIDE.md` - 本集成文档
 
@@ -555,17 +585,35 @@ msg->img.data.reserve(expected_size);
 - `RosMessage/test/README.md` - 测试说明
 
 ### 重要提醒
-✅ **文件已经按照标准ROS2结构组织** - `organize_submodules.sh`脚本自动创建了正确的标准ROS2结构：
-- 从 `include/perception/perception_img.hpp` 
-- 重组为 `include/perception_messages/msg/perception_img.hpp`
 
-这样用户就可以使用标准的包含方式：
-```cpp
-#include "perception_messages/msg/perception_img.hpp"
-#include "control_messages/msg/control_command.hpp"
+✅ **标准ROS2结构** - 文件已按照ROS2标准组织：
+- 头文件路径：`include/perception_messages/msg/`、`include/control_messages/msg/`
+- 库文件路径：`lib/perception_messages/`、`lib/control_messages/`
+- 包含方式：`#include "perception_messages/msg/消息名.hpp"`
+
+✅ **一键式组织** - 运行 `./organize_submodules.sh` 即可从源码生成标准结构
+
+✅ **第三方友好** - 所有路径使用相对路径，支持任意位置部署
+
+### 快速验证
+```bash
+# 验证结构正确性
+ls include/perception_messages/msg/perception_img.hpp  # 应该存在
+ls lib/perception_messages/libperception_messages__rosidl_typesupport_cpp.so  # 应该存在
+
+# 验证功能正确性
+cd test && ./build_tests.sh && ./install/rosmessage_tests/bin/test_submodules
 ```
 
 ---
 
-**最后更新**: 2025年9月11日
-**文档版本**: 1.0.0
+**最后更新**: 2025年9月11日  
+**文档版本**: 2.0.0  
+**ROS2版本**: Humble  
+**架构**: 标准ROS2模块化消息系统
+
+**更新内容**:
+- ✅ 更新为标准ROS2目录结构 (`perception_messages/msg/`)
+- ✅ 简化组织脚本，使用相对路径
+- ✅ 优化第三方集成工作流程
+- ✅ 增强故障排除指南
