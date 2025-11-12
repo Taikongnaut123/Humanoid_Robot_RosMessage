@@ -1,0 +1,12 @@
+# 请求部分为空
+---
+
+# 响应部分
+string[] joint
+
+float32[] pos
+
+float32[] vel
+
+string[] err
+
