@@ -1,0 +1,25 @@
+# 请求部分：可以指定一个或两个关节的控制信息
+# 单个关节控制：只填写joint1相关字段，joint2字段留空
+# 两个关节控制：同时填写joint1和joint2相关字段
+string joint1_name  # 第一个关节名称（如head_camera_yaw_joint/水平）
+float32 joint1_target_position  # 第一个关节目标绝对位置(弧度)
+
+# 第二个关节相关字段（可选，用于同时控制两个关节）
+string joint2_name  # 第二个关节名称（如head_camera_pitch_joint/垂直）
+float32 joint2_target_position  # 第二个关节目标绝对位置(弧度)
+bool control_joint2  # 标记是否需要控制第二个关节（true表示需要控制）
+
+---
+# 响应部分：返回控制结果
+bool success  # 整体操作是否成功
+string message  # 结果消息，如成功信息或错误原因
+
+# 单个关节控制时，以下两个字段返回对应关节的结果
+# 两个关节控制时，分别返回两个关节的控制结果
+bool joint1_success  # 第一个关节控制是否成功
+string joint1_message  # 第一个关节的结果消息
+
+# 第二个关节的控制结果（仅当control_joint2为true时有意义）
+bool joint2_success  # 第二个关节控制是否成功
+string joint2_message  # 第二个关节的结果消息
+    

@@ -19,6 +19,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ExecuteTrajectory.srv"
   "srv/CommandService.srv"
   "srv/SceneSync.srv"
+  "srv/DecisionInfo.srv"
+  "msg/DecisionInfo.msg"
+  "msg/ModuleStatus.msg"
+  "msg/NaviStatus.msg"
   "action/FollowJointTrajectory.action"
   DEPENDENCIES std_msgs sensor_msgs geometry_msgs
 )
